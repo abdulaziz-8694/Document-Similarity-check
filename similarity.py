@@ -1,6 +1,6 @@
 ##################################################
-#Filename: test.py
-#Author: Abdul Aziz CS12B1001
+#Filename: similarity.py
+#Author: Abdul Aziz 
 #How to run: On terminal type python similarity.py
 ##################################################
 import Tkinter, tkFileDialog
