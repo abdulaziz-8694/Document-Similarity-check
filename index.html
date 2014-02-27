@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script type="text/javascript" src="data.js">
+	console.log(data)
+	</script>
+<style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+</style>
+</head>
+<body>
+<center><h1><b><u>File Similarity Results</u></b></h1><p>Double click on Nodes to open files and single click on link to open two files with links</center>
+<script src="d3.v3.js"></script>
+<script>
+	
+var width = 960,
+    height = 500;
+
+var color = d3.scale.category20();
+	
+	function color_gen()//to generate colors
+	{
+		var r=Math.floor(Math.random()*256).toString(16);
+		var g=Math.floor(Math.random()*256).toString(16);
+		var b=Math.floor(Math.random()*256).toString(16);
+		s="#"
+		
+		if(r.length<2){r="0"+r;}
+		if(g.length<2){g="0"+g;}
+		if(b.length<2){b="0"+b;}
+		s+=r+g+b;
+		if(s=="#000000"){s="#230422";}
+		return s;
+		console.log(this)
+	}
+	color_gen();
+var force = d3.layout.force()
+    .charge(-500)
+    .linkDistance(100)
+    .size([width, height]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+	.call(d3.behavior.zoom().on("zoom", draw));
+
+	function draw(){/*to zoom in  and zoom out using scroll*/
+	svg.attr("transform","translate("+d3.event.translate+")"+"scale("+d3.event.scale+")");
+	}
+d3.json("data.json", function(error, graph) {
+  force
+      .nodes(graph.nodes)
+      .links(graph.links)
+      .start();
+
+  var link = svg.selectAll(".link")
+    .data(graph.links)
+    .enter().append("line")
+    .attr("class", "link")
+	.on("click", function(d){/*to open two files in a new window*/
+		w=window.open();
+		w.document.write(
+		"<html>"+
+		"<head><style text=\"text/css\">#file1{width:45%;float:left;}#file2{width:45%;float:right;}");
+		for (i=0;i<d.pairs.length;i++) 
+		{
+			var color2 = color_gen();
+			w.document.write(".file1line"+d.pairs[i][0]+"{background-color:"+color2+";}"+
+			".file2line"+d.pairs[i][1]+"{background-color:"+color2+";}");
+		}
+		w.document.write("</style></head>"+
+		"<body><div id=\"file1\"><centre>"+
+		"<h1>"+filename[this.__data__.source.index]+"</h1>");
+		for (i in filedata[this.__data__.source.index])
+		{
+			w.document.write("<p class=\"file1line"+i+"\">"+filedata[this.__data__.source.index][i]+"</p>");
+		}
+		w.document.write("</centre></div>");
+		w.document.write("<div id=\"file2\"><centre>"+
+		"<h1>"+filename[this.__data__.target.index]+"</h1><p>");
+		for (i in filedata[this.__data__.target.index])
+		{
+			w.document.write("<p class=\"file2line"+i+"\">"+filedata[this.__data__.target.index][i]+"</p>");
+		}
+		w.document.write("</p></centre></div></body></html>");
+		console.log(this);
+	
+
+	})
+	  .style("stroke-width", 5);
+
+  var node = svg.selectAll(".node")
+    .data(graph.nodes)
+    .enter().append("circle")
+    .attr("class", "node")
+    .attr("r", 10)
+    .on("dblclick", function(){/*function to open files*/
+		w=window.open();
+		w.document.write("<html><body><h1>"
+			+filename[this.__data__.index]+"</h1><p>");
+		for (i in filedata[this.__data__.index])
+		{
+				w.document.write(filedata[this.__data__.index][i]+"<br>");
+		}
+		w.document.write("</p></body></html>");
+		console.log(this);	
+	})
+	.style("fill", function(d){return color(0);})
+    .call(force.drag);
+
+  node.append("title")
+      .text(function(d) { return d.name; });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+  });
+});
+
+</script>
+</body>
+</html>
