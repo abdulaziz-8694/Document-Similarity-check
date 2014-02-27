@@ -19,6 +19,7 @@ def init_matrix(n):
 			temp.append(0)
 		A.append(temp)
 	return (A)
+	########################################################################
 def senSim(senA,senB,alpha):  			#to find the similarity of two lines each from different file
 	senA = re.sub('[\W]', ' ', senA)
 	senA = senA.split(" ")
@@ -30,7 +31,7 @@ def senSim(senA,senB,alpha):  			#to find the similarity of two lines each from 
 	if result < alpha:
 		result = 0
 	return result
-
+	#########################################################################################################
 def getFileSim(fileA,fileB,alpha,beta):  	#to find the similarity of two files
 	File1=open(dirname+'/'+fileA, "r")
 	File2=open(dirname+'/'+fileB, "r")
@@ -64,10 +65,7 @@ def getFileSim(fileA,fileB,alpha,beta):  	#to find the similarity of two files
 	if FileSim<beta:
 		FileSim = 0
 	return (FileSim, maxSimMatrix)
-		
-	
-
-
+	#################################################################################################
 def getFile(dirname):
 	files=[]
 	for file in os.listdir(dirname):
@@ -75,6 +73,56 @@ def getFile(dirname):
 		if mimetypes.guess_type(filepath) == ('text/plain',None ):
 			files.append(file)
 	return files
+	################################################################################################
+def getData(dirname,files,S,sim,beta):#for creating json file
+	data={}
+	filelist = []
+	for file in files:
+		temp={}
+		temp['name'] = file
+		content=open(dirname+'/'+file).read()
+		filelist.append(temp)
+	data['nodes'] = filelist
+	links = []
+	for i in range(len(S)):
+		for j in range(i+1,len(S)):
+			#print i,j
+			if	S[i][j]>=beta:
+				temp={}
+				temp['source'] = i
+				temp['target'] = j
+				temp['weight'] = S[i][j]
+				temp2=[]
+				temp['pairs'] = sim[i][j]
+				links.append(temp)
+	data['links'] = links
+	return data
+	###############################################################################################
+def getData2(dirname,files): #for storing filedata in a js file
+	data=""
+	filesdata="["
+	name="["
+	for file in files:
+		name+="'"+file+"',"
+		f=open(dirname+'/'+file, "r")
+		content=f.readlines()
+		filesdata+="["
+		for sen in content:
+			l=str(sen)
+			m=l.replace('"',r'\"')
+			m=m.replace('<', r'&lt;')
+			m=m.replace('>', r'&gt;')
+			filesdata+="\""+m+"\","
+		filesdata+="],"
+	name+="];"
+	filesdata+="]"
+	filesdata=re.sub("\n","",filesdata)
+	data = "filename="+name+'\n'+"filedata="+filesdata
+	return data
+	################################################################################################
+def dumpData(data,dirname):
+	with open('data.json', 'wb') as f:
+		json.dump(data, f)
 	
          #############################################main##################################################	
 
@@ -108,55 +156,7 @@ for a in range(len(files)):
 			S[a][b]=x
 			sim[a][b]=y
 
-def getData(dirname,files,S,sim,beta):#for creating json file
-	data={}
-	filelist = []
-	for file in files:
-		temp={}
-		temp['name'] = file
-		content=open(dirname+'/'+file).read()
-		filelist.append(temp)
-	data['nodes'] = filelist
-	links = []
-	for i in range(len(S)):
-		for j in range(i+1,len(S)):
-			#print i,j
-			if	S[i][j]>=beta:
-				temp={}
-				temp['source'] = i
-				temp['target'] = j
-				temp['weight'] = S[i][j]
-				temp2=[]
-				temp['pairs'] = sim[i][j]
-				links.append(temp)
-	data['links'] = links
-	return data
 
-def getData2(dirname,files): #for storing filedata in a js file
-	data=""
-	filesdata="["
-	name="["
-	for file in files:
-		name+="'"+file+"',"
-		f=open(dirname+'/'+file, "r")
-		content=f.readlines()
-		filesdata+="["
-		for sen in content:
-			l=str(sen)
-			m=l.replace('"',r'\"')
-			m=m.replace('<', r'&lt;')
-			m=m.replace('>', r'&gt;')
-			filesdata+="\""+m+"\","
-		filesdata+="],"
-	name+="];"
-	filesdata+="]"
-	filesdata=re.sub("\n","",filesdata)
-	data = "filename="+name+'\n'+"filedata="+filesdata
-	return data
-
-def dumpData(data,dirname):
-	with open('data.json', 'wb') as f:
-		json.dump(data, f)
 		
 data=getData(dirname,files,S,sim,beta)
 data2 = getData2(dirname,files)
