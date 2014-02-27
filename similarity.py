@@ -5,13 +5,12 @@
 #Description :this file takes input  and generates data.json and files									#
 #########################################################################################################
 import Tkinter, tkFileDialog, tkSimpleDialog #for gui
-import os, mimetypes, sys						#for 
-from munkres import Munkres
-import json, shutil, re
+import os, mimetypes, sys			#for file and string operations
+from munkres import Munkres			#for implementing Hungarian algorithm
+import json, shutil, re				#for copy and format using regular expression
 
 S = []
 
-dirname = "C:/Users/AbdulAziz/Desktop/rs agarwal"
 def init_matrix(n):
 	A = []
 	for i in range(n):
@@ -20,7 +19,7 @@ def init_matrix(n):
 			temp.append(0)
 		A.append(temp)
 	return (A)
-def senSim(senA,senB,alpha):
+def senSim(senA,senB,alpha):  			#to find the similarity of two lines each from different file
 	senA = re.sub('[\W]', ' ', senA)
 	senA = senA.split(" ")
 	senB = re.sub('[\W]', ' ', senB)
@@ -32,7 +31,7 @@ def senSim(senA,senB,alpha):
 		result = 0
 	return result
 
-def getFileSim(fileA,fileB,alpha,beta):
+def getFileSim(fileA,fileB,alpha,beta):  	#to find the similarity of two files
 	File1=open(dirname+'/'+fileA, "r")
 	File2=open(dirname+'/'+fileB, "r")
 	content1=File1.readlines()
@@ -49,17 +48,17 @@ def getFileSim(fileA,fileB,alpha,beta):
 			sen_B = sen_B.lower()
 			temp.append(senSim(sen_A,sen_B,alpha))
 		sim.append(temp)
-	for i in range(len(sim)): #to make it a maximum cost problem
+	for i in range(len(sim))		 #to make it a maximum cost problem
 		for j in range(len(sim[i])):
 			sim[i][j] = 1.0-sim[i][j]
 	m=Munkres()
-	result_matrix=m.compute(sim)
+	result_matrix=m.compute(sim)		#implementing hungarian 
 	maxSimMatrix = []
 	for row,column in result_matrix:
 		if	sim[row][column]!=1.0:
 			if flag==1:
 				row,column=column,row
-			maxSimMatrix.append([row,column])
+			maxSimMatrix.append([row,column])	#storing which lines are matched
 	FileSim=float(len(maxSimMatrix))/(len(content1))
 	
 	if FileSim<beta:
@@ -76,8 +75,10 @@ def getFile(dirname):
 		if mimetypes.guess_type(filepath) == ('text/plain',None ):
 			files.append(file)
 	return files
+	
+         #############################################main##################################################	
 
-root = Tkinter.Tk()
+root = Tkinter.Tk()  #Creating a window for taking inputs
 root.withdraw()
 dirname = tkFileDialog.askdirectory(parent=root,initialdir="/",title='Please select a directory')
 alpha = tkSimpleDialog.askfloat('Alpha', 'Enter the value of alpha', initialvalue=0.6, minvalue=0.0, maxvalue=1.0)
@@ -102,15 +103,14 @@ for a in range(len(files)):
 			S[a][b] = 1
 		else:
 			(x,y) = getFileSim(files[a],files[b],alpha,beta)
-			#print "just after", y
+			if(a<=b)
+			print "Compared "+files[a]+" and "+files[b]
 			S[a][b]=x
 			sim[a][b]=y
-print sim
-#for creating json file
-def getData(dirname,files,S,sim,beta):
+
+def getData(dirname,files,S,sim,beta):#for creating json file
 	data={}
 	filelist = []
-	#print len(files)
 	for file in files:
 		temp={}
 		temp['name'] = file
@@ -132,7 +132,7 @@ def getData(dirname,files,S,sim,beta):
 	data['links'] = links
 	return data
 
-def getData2(dirname,files):
+def getData2(dirname,files): #for storing filedata in a js file
 	data=""
 	filesdata="["
 	name="["
